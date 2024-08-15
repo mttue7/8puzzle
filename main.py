@@ -64,6 +64,31 @@ class Jogo8Puzzle(tk.Tk):
             self.contador_tentativas += 1
             self.label_tentativas.config(text=f"Tentativas: {self.contador_tentativas}")
 
+            # Verifica se o jogo foi concluído
+            if self.verificar_conclusao():
+                self.exibir_mensagem_conclusao()
+
+    def verificar_conclusao(self):
+        # Verifica se a matriz está na configuração correta
+        correto = np.arange(1, 10).reshape(3, 3).astype(str)
+        correto[correto == '9'] = 'x'
+        return np.array_equal(self.matriz, correto)
+
+    def exibir_mensagem_conclusao(self):
+        # Cria uma nova janela Toplevel
+        mensagem_jogo = tk.Toplevel(self)
+        mensagem_jogo.title("Parabéns!")
+        mensagem_jogo.geometry("300x150")
+        mensagem_jogo.config(bg="lightgreen")
+
+        # Adiciona um Label com a mensagem de conclusão
+        mensagem = tk.Label(mensagem_jogo, text=f"Você completou o jogo", font=self.custom_font, bg="lightgreen")
+        mensagem.pack(pady=10)
+
+        # Adiciona um botão para fechar a janela
+        botao_fechar = tk.Button(mensagem_jogo, text="Fechar", command=mensagem_jogo.destroy, font=self.custom_font)
+        botao_fechar.pack(pady=10)
+
 if __name__ == "__main__":
     app = Jogo8Puzzle()
     app.mainloop()
