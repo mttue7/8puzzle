@@ -74,6 +74,37 @@ class Jogo8Puzzle(tk.Tk):
         correto[correto == '9'] = 'x'
         return np.array_equal(self.matriz, correto)
 
+    def Inversion_Counter(self,arr):
+        arr = np.array(arr)
+        arr = arr[ arr != 'x']
+        inversões = 0
+        for i in range(len(arr)):
+            for j in range(i+1,len(arr)):
+                if arr[i] > arr[j]:
+                    inversões += 1
+        return inversões
+
+    def jogo_resolvivel(self):
+        inver = self.Inversion_Counter(self.matriz.flatten()) 
+        if inver % 2 == 0:
+            return True
+        else: 
+            self.exibir_mensagem_Nresolvivel()
+            return False
+
+
+    def exibir_mensagem_Nresolvivel(self):
+        mensagem_jogo1 = tk.Toplevel(self)
+        mensagem_jogo1.title("Não é resolvível!")
+        mensagem_jogo1.geometry("280x160")
+        mensagem_jogo1.config(bg="lightgreen")
+
+        mensagem = tk.Label(mensagem_jogo1, text="Não é resolvível!", font=self.custom_font, bg="blue")
+        mensagem.pack(pady=10)
+
+        botao_fechar = tk.Button(mensagem_jogo1, text="Fechar", command=mensagem_jogo1.destroy, font=self.custom_font)
+        botao_fechar.pack(pady=10)
+
     def exibir_mensagem_conclusao(self):
         # Cria uma nova janela Toplevel
         mensagem_jogo = tk.Toplevel(self)
