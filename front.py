@@ -1,8 +1,6 @@
-# jogo_gui.py
-
 import tkinter as tk
 from tkinter import font
-from main import JogoLogica  # Importa a lógica do jogo
+from main import JogoLogica
 
 class Jogo8PuzzleGUI(tk.Tk):
     def __init__(self):
@@ -11,22 +9,18 @@ class Jogo8PuzzleGUI(tk.Tk):
         self.geometry("350x350")
         self.config(bg="lightblue")
 
-        self.front = JogoLogica()  # Instancia a lógica do jogo
+        self.front = JogoLogica()
 
-        # Desativa o redimensionamento da janela
         self.resizable(False, False)
 
         self.custom_font = font.Font(family="Helvetica", size=16, weight="bold")
 
-        # Label de título
         self.label_game = tk.Label(self, text="8 PUZZLE GAME", font=self.custom_font, bg="lightblue")
         self.label_game.grid(row=0, column=0, columnspan=3, pady=8)
 
-        # Label de tentativas
         self.label_tentativas = tk.Label(self, text=f"Tentativas: {self.front.contador_tentativas}", font=self.custom_font, bg="lightblue")
         self.label_tentativas.grid(row=4, column=0, columnspan=3, pady=10)
 
-        # Configura linhas e colunas para expansão
         for i in range(3):
             self.grid_columnconfigure(i, weight=1)
             self.grid_rowconfigure(i+1, weight=1)
@@ -48,9 +42,6 @@ class Jogo8PuzzleGUI(tk.Tk):
         if self.front.fazer_jogada(i, j):
             self.atualizar_interface()
 
-            if not self.front.jogo_resolvivel():
-                self.exibir_mensagem_Nresolvivel()
-
             if self.front.verificar_conclusao():
                 self.exibir_mensagem_conclusao()
 
@@ -60,29 +51,31 @@ class Jogo8PuzzleGUI(tk.Tk):
                 self.botoes[i][j].config(text=self.front.matriz[i, j])
         self.label_tentativas.config(text=f"Tentativas: {self.front.contador_tentativas}")
 
-    def exibir_mensagem_Nresolvivel(self):
-        mensagem_jogo1 = tk.Toplevel(self)
-        mensagem_jogo1.title("Não é resolvível!")
-        mensagem_jogo1.geometry("280x160")
-        mensagem_jogo1.config(bg="lightgreen")
-
-        mensagem = tk.Label(mensagem_jogo1, text="Não é resolvível!", font=self.custom_font, bg="blue")
-        mensagem.pack(pady=10)
-
-        botao_fechar = tk.Button(mensagem_jogo1, text="Fechar", command=mensagem_jogo1.destroy, font=self.custom_font)
-        botao_fechar.pack(pady=10)
-
     def exibir_mensagem_conclusao(self):
-        mensagem_jogo = tk.Toplevel(self)
-        mensagem_jogo.title("Parabéns!")
-        mensagem_jogo.geometry("300x150")
-        mensagem_jogo.config(bg="lightgreen")
+        self.mensagem_jogo = tk.Toplevel(self)
+        self.mensagem_jogo.title("Parabéns!")
+        self.mensagem_jogo.geometry("300x150")
+        self.mensagem_jogo.config(bg="lightgreen")
 
-        mensagem = tk.Label(mensagem_jogo, text=f"Você completou o jogo", font=self.custom_font, bg="lightgreen")
+        mensagem = tk.Label(self.mensagem_jogo, text=f"Você completou o jogo!", font=self.custom_font, bg="lightgreen")
         mensagem.pack(pady=10)
 
-        botao_fechar = tk.Button(mensagem_jogo, text="Fechar", command=mensagem_jogo.destroy, font=self.custom_font)
+        botao_reiniciar = tk.Button(self.mensagem_jogo, text="Jogar Novamente", command=self.reiniciar_jogo, font=self.custom_font)
+        botao_reiniciar.pack(pady=10)
+
+        botao_fechar = tk.Button(self.mensagem_jogo, text="Fechar", command=self.quit, font=self.custom_font)
         botao_fechar.pack(pady=10)
+
+    def reiniciar_jogo(self):
+        self.label_embaralhando.config(text="Embaralhando...")
+        self.update_idletasks()  # Força a atualização da interface antes de prosseguir
+
+        self.after(500, self.embaralhar_jogo)
+
+    def embaralhar_jogo(self):
+        self.front = JogoLogica() 
+        self.atualizar_interface()
+        self.label_tentativas.config(text=f"Tentativas: {self.front.contador_tentativas}")
 
 if __name__ == "__main__":
     app = Jogo8PuzzleGUI()
