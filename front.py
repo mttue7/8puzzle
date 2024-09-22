@@ -6,7 +6,7 @@ class Jogo8PuzzleGUI(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Jogo do 8-Puzzle")
-        self.geometry("350x350")
+        self.geometry("500x350")  # Aumentei a largura da janela para acomodar os novos botões
         self.config(bg="lightblue")
 
         self.front = JogoLogica()
@@ -26,6 +26,7 @@ class Jogo8PuzzleGUI(tk.Tk):
             self.grid_rowconfigure(i+1, weight=1)
 
         self.criar_botões()
+        self.criar_botoes_busca()  # Cria os botões de busca à direita
 
     def criar_botões(self):
         self.botoes = []
@@ -37,6 +38,19 @@ class Jogo8PuzzleGUI(tk.Tk):
                 botao.grid(row=i+1, column=j, padx=4, pady=4, sticky="nsew")
                 linha.append(botao)
             self.botoes.append(linha)
+
+    def criar_botoes_busca(self):
+        # Botão para busca em largura
+        botao_busca_largura = tk.Button(self, text="Busca Largura", command=self.executar_busca_largura, font=self.custom_font, bg="orange", fg="black", relief="raised", bd=4)
+        botao_busca_largura.grid(row=1, column=3, padx=10, pady=5)
+
+        # Botão para busca em profundidade
+        botao_busca_profundidade = tk.Button(self, text="Busca Profundidade", command=self.executar_busca_profundidade, font=self.custom_font, bg="orange", fg="black", relief="raised", bd=4)
+        botao_busca_profundidade.grid(row=2, column=3, padx=10, pady=5)
+
+        # Botão para busca A*
+        botao_busca_a = tk.Button(self, text="Busca A*", command=self.executar_busca_a, font=self.custom_font, bg="orange", fg="black", relief="raised", bd=4)
+        botao_busca_a.grid(row=3, column=3, padx=10, pady=5)
 
     def botão_clicado(self, i, j):
         if self.front.fazer_jogada(i, j):
@@ -68,14 +82,24 @@ class Jogo8PuzzleGUI(tk.Tk):
 
     def reiniciar_jogo(self):
         self.label_embaralhando.config(text="Embaralhando...")
-        self.update_idletasks()  # Força a atualização da interface antes de prosseguir
+        self.update_idletasks()
 
         self.after(500, self.embaralhar_jogo)
 
     def embaralhar_jogo(self):
-        self.front = JogoLogica() 
+        self.front = JogoLogica()
         self.atualizar_interface()
         self.label_tentativas.config(text=f"Tentativas: {self.front.contador_tentativas}")
+
+    # Funções para executar as buscas
+    def executar_busca_largura(self):
+        self.front.buscaLargura()  # Chama a função busca em largura da lógica do jogo
+
+    def executar_busca_profundidade(self):
+        self.front.buscaProfundidade()  # Chama a função busca em profundidade da lógica do jogo
+
+    def executar_busca_a(self):
+        self.front.buscaA()  # Chama a função busca A* da lógica do jogo
 
 if __name__ == "__main__":
     app = Jogo8PuzzleGUI()
