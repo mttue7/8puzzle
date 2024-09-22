@@ -40,22 +40,34 @@ class Jogo8PuzzleGUI(tk.Tk):
         mensagem2 = tk.Label(self.frame_ia, text="Qual a IA deseja utilizar?", font=self.custom_font, bg="lightgreen")
         mensagem2.pack(pady=20)
 
-        botao_ia1 = tk.Button(self.frame_ia, text="Busca em largura", command=self.iniciar_jogo_com_ia, font=self.custom_font)
+        botao_ia1 = tk.Button(self.frame_ia, text="Busca em largura", command=lambda: self.iniciar_jogo_com_ia("largura"), font=self.custom_font)
         botao_ia1.pack(pady=10)
 
-        botao_ia2 = tk.Button(self.frame_ia, text="Busca em profundidade", command=self.iniciar_jogo_com_ia, font=self.custom_font)
+        botao_ia2 = tk.Button(self.frame_ia, text="Busca em profundidade", command=lambda: self.iniciar_jogo_com_ia("profundidade"), font=self.custom_font)
         botao_ia2.pack(pady=10)
 
-        botao_ia3 = tk.Button(self.frame_ia, text="Heurística", command=self.iniciar_jogo_com_ia, font=self.custom_font)
+        botao_ia3 = tk.Button(self.frame_ia, text="Heurística", command=lambda: self.iniciar_jogo_com_ia("heuristica"), font=self.custom_font)
         botao_ia3.pack(pady=10)
+
+    def iniciar_jogo_com_ia(self, tipo_ia):
+        self.frame_ia.destroy()
+
+        if tipo_ia == "largura":
+            self.front.buscaLargura()
+        elif tipo_ia == "profundidade":
+            self.front.buscaProfundidade()
+        elif tipo_ia == "heuristica":
+            self.front.buscaA()
+
+        self.inicio_jogo()
+
+        self.atualizar_interface()  # Atualiza a interface após a IA jogar
+
 
     def iniciar_jogo_sozinho(self):
         self.frame_inicial.destroy()
         self.inicio_jogo()
 
-    def iniciar_jogo_com_ia(self):
-        self.frame_ia.destroy()
-        self.inicio_jogo()
 
     def inicio_jogo(self):
         self.label_game = tk.Label(self, text="8 PUZZLE GAME", font=self.custom_font, bg="lightblue")
