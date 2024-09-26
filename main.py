@@ -1,5 +1,4 @@
 import time
-import heapq
 import numpy as np
 from collections import deque
 
@@ -7,7 +6,9 @@ from collections import deque
 class EstadoBusca:
     def __init__(self,estado):
         self.estado  = estado
-        self.estadoAnterior = None
+        self.estadosAnteriores = []
+        self.profundidade = 0
+
 
 class JogoLogica:
     def __init__(self):
@@ -68,16 +69,15 @@ class JogoLogica:
 
         if abs(x_i - i) + abs(x_j - j) == 1:
             self.estado_anterior = self.estado_atual.copy()
-            print("anterior: \n", self.estado_anterior)
             self.matriz[x_i, x_j], self.matriz[i, j] = self.matriz[i, j], self.matriz[x_i, x_j]
             self.estado_atual = self.matriz.copy()
-            print("\n\natual: \n", self.estado_atual)
-            print("\n")
             self.contador_tentativas += 1
 
 
             return True
         return False
+    
+
     
 
     def calcCusto(self,matriz):
@@ -92,11 +92,12 @@ class JogoLogica:
 
 
 
-    def calcAdjacentes(self, estadoOriginal,estadosVisitados):
+    def calcAdjacentes(self, estadoOriginal):
             listaEstados = []
             x_i, x_j = np.where(estadoOriginal.estado == ' ')
             x_i, x_j = int(x_i[0]), int(x_j[0])
             matrizAux = estadoOriginal.estado.copy()
+            estadoOriginal.estadosAnteriores.append(tuple(estadoOriginal.estado.copy().flatten()))
 
             for i in range(3):
                 for j in range(3):
@@ -104,11 +105,13 @@ class JogoLogica:
                         matrizAux[i][j] = estadoOriginal.estado[x_i][x_j]
                         matrizAux[x_i][x_j] = estadoOriginal.estado[i][j]
                         
-                        estadoTupla = tuple(matrizAux.flatten())  
+                        estadoTupla = tuple(matrizAux.copy().flatten())  
                         
-                        if not estadoTupla in estadosVisitados:
+                        if not estadoTupla in estadoOriginal.estadosAnteriores:
+                            
                             novoEstado = EstadoBusca(matrizAux.copy())
-                            novoEstado.estadoAnterior = estadoOriginal
+                            novoEstado.profundidade = estadoOriginal.profundidade + 1
+                            novoEstado.estadosAnteriores = estadoOriginal.estadosAnteriores.copy()
                             listaEstados.append(novoEstado)
                         
                         
@@ -118,49 +121,38 @@ class JogoLogica:
             return listaEstados
 
 
-    def printEstado(self,estadoBusca):
-        filaEstados = [] 
-        while(estadoBusca):
-            filaEstados.append (estadoBusca.estado)
-            estadoBusca = estadoBusca.estadoAnterior
-        numEstados = 1
-        while(filaEstados):
-            print(' == Estado ',numEstados,' ==')
-            numEstados+=1
-            estado = filaEstados.pop()
-            np.array(estado).reshape(3, 3)
-            for linha in estado:
-                print(" ".join(linha))
-                print()
-
+    def printEstado(self,estado):
+        for linha in estado:
+            print(" ".join(linha))
+            print()
 
     def buscaLargura(self):
         filaEstados = deque()
         estadoAnalisado = EstadoBusca(self.estado_atual)
-        visitados = set()
-        visitados.add(tuple(estadoAnalisado.estado.flatten()))
         filaEstados.append(estadoAnalisado)
         listaAdjacentes = []
         estadoFinal = np.arange(1, 10).reshape(3, 3).astype(str)
         estadoFinal[estadoFinal == '9'] = ' '
-        numVisitas = 0
-        
+        numEstadosVisitados = 0
         while filaEstados:
-            numVisitas+=1
-            estadoAnalisado = filaEstados.popleft()   
+            estadoAnalisado = filaEstados.popleft()
+            numEstadosVisitados+= 1
             if np.array_equal(estadoAnalisado.estado, estadoFinal):
                 print("Estado final encontrado!")
-                self.printEstado(estadoAnalisado)
-                print('No total foram visitados ',numVisitas, 'estados')
+                numEstados = 1
+               
+                for estadoAnterior in estadoAnalisado.estadosAnteriores:
+                    print(' == Estado ',numEstados,' ==')
+                    numEstados+=1
+                    self.printEstado(np.array(estadoAnterior).reshape(3, 3))
+                print(' == Estado ',numEstados,' ==')
+                self.printEstado(np.array(estadoAnalisado.estado).reshape(3, 3))
+                print('Foram visitados no total ',numEstadosVisitados,' estados')
                 return True
-            listaAdjacentes = self.calcAdjacentes(estadoAnalisado,visitados)
-
-            for estadoAdj in listaAdjacentes:
-                estadoTupla = tuple(estadoAdj.estado.flatten())
-                filaEstados.append(estadoAdj)
-                visitados.add(estadoTupla)
-
-
+            listaAdjacentes = self.calcAdjacentes(estadoAnalisado)
+    
+            for estado in listaAdjacentes:
+                filaEstados.append(estado)
         print("Estado não encontrado")
         return False
 
@@ -169,29 +161,30 @@ class JogoLogica:
    
         pilhaEstados = []  
         estadoAnalisado = EstadoBusca(self.estado_atual)
-        visitados = set()
-        visitados.add(tuple(estadoAnalisado.estado.flatten()))
         pilhaEstados.append(estadoAnalisado)  
         estadoFinal = np.arange(1, 10).reshape(3, 3).astype(str)
-        estadoFinal[estadoFinal == '9'] = ' '
-        visitados = set()
-        numVisitas = 0
-        
+        estadoFinal[estadoFinal == '9'] = ' '  
+        numEstadosVisitados = 0
         while pilhaEstados:
             estadoAnalisado = pilhaEstados.pop()  
-            numVisitas += 1
+            numEstadosVisitados+= 1
             if np.array_equal(estadoAnalisado.estado, estadoFinal):
                 print("Estado final encontrado!")
-                self.printEstado(estadoAnalisado)
-                print('No total foram visitados ',numVisitas, 'estados')
+                numEstados = 1
+                for estadoAnterior in estadoAnalisado.estadosAnteriores:
+                    print(' == Estado ',numEstados,' ==')
+                    numEstados+=1
+                    self.printEstado(np.array(estadoAnterior).reshape(3, 3))
+                print(' == Estado ',numEstados,' ==')
+                self.printEstado(np.array(estadoAnalisado.estado).reshape(3, 3))
+                print('Foram visitados no total ',numEstadosVisitados,' estados')
                 return True
             
-            listaAdjacentes = self.calcAdjacentes(estadoAnalisado,visitados)
+            listaAdjacentes = self.calcAdjacentes(estadoAnalisado)
             
-            for estadoAdj in listaAdjacentes:
-                estadoTupla = tuple(estadoAdj.estado.flatten())
-                pilhaEstados.append(estadoAdj)
-                visitados.add(estadoTupla)
+            for estado in listaAdjacentes:
+                if estado.profundidade < 50:
+                    pilhaEstados.append(estado)
         
         print("Estado não encontrado")
         return False
@@ -210,43 +203,65 @@ class JogoLogica:
     def buscaA(self):
         listaPrioridade = []
         estadoAnalisado = EstadoBusca(self.estado_atual)
-        visitados = set()
-        visitados.add(tuple(estadoAnalisado.estado.flatten()))
         listaPrioridade.append((0,estadoAnalisado))
         estadoFinal = np.arange(1, 10).reshape(3, 3).astype(str)
         estadoFinal[estadoFinal == '9'] = ' '  
         prioridade = 0
-        numVisitas = 0
-        
+        numEstadosVisitados = 0
         while listaPrioridade:
+
             indiceEstado = self.retornaPrioridade(listaPrioridade)
             estadoPrioridade = listaPrioridade.pop(indiceEstado)
             estadoAnalisado = estadoPrioridade[1]
-            numVisitas+=1
+            numEstadosVisitados += 1
             if np.array_equal(estadoAnalisado.estado, estadoFinal):
                 print("Estado final encontrado!")
-                self.printEstado(estadoAnalisado)
-                print('No total foram visitados ',numVisitas, 'estados')
+                numEstados = 1
+                for estadoAnterior in estadoAnalisado.estadosAnteriores:
+                    print(' == Estado ',numEstados,' ==')
+                    numEstados+=1
+                    self.printEstado(np.array(estadoAnterior).reshape(3, 3))
+                print(' == Estado ',numEstados,' ==')
+                self.printEstado(np.array(estadoAnalisado.estado).reshape(3, 3))
+                print('Foram visitados no total ',numEstadosVisitados,' estados')
                 return True
-          
-            listaAdjacentes = self.calcAdjacentes(estadoAnalisado,visitados)
-
-            for estadoAdj in listaAdjacentes:
-                prioridade = self.calcCusto(estadoAdj.estado) + self.contadorEstados(estadoAdj)
-                estadoTupla = tuple(estadoAdj.estado.flatten())
-                listaPrioridade.append((prioridade,estadoAdj))
-                visitados.add(estadoTupla)
             
-              
-           
+            listaAdjacentes = self.calcAdjacentes(estadoAnalisado)
+         
+            for estadoAdj in listaAdjacentes:
+                prioridade = self.calcCusto(estadoAdj.estado) + estadoAdj.profundidade
+                listaPrioridade.append((prioridade,estadoAdj))
                 
         print("Estado não encontrado")
         return False
         
+
         
-    def contadorEstados(self,estadoBusca):
-        contador = 0
-        while(estadoBusca.estadoAnterior):
-            contador+= 1
-            estadoBusca = estadoBusca.estadoAnterior
-        return contador
+            
+            
+
+
+
+        
+
+
+
+    
+
+
+
+
+
+
+        
+
+        
+
+            
+
+        
+
+
+
+                    
+                    
